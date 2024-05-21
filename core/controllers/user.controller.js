@@ -1,7 +1,6 @@
 //API
 
-
-import { User } from "../models/user.js";
+import { User } from "../models/user.models.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -28,12 +27,28 @@ export const signup = async (req, res) => {
 
     res.status(200).json(newUser);
   } catch (error) {
-    console.error(error);
+    console.error('Api Error',error);
     res.status(500).json({ message: "Server Error" });
   }
 };
 
+const generateAccessAndRefereshTokens = async (userId) => {
+  try {
+    const user = await User.findById(userId);
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+    console.log( accessToken, refreshToken )
+    user.refreshToken = refreshToken;
+    await user.save({ validateBeforeSave: false });
+
+    return { accessToken, refreshToken };
+  } catch (error) {
+    console.log('Error in Generating Tokens, error')
+  }
+};
+
 export const login = async (req, res) => {
+  console.log('login ir RUnnong')
   const { email, password } = req.body;
 
   try {
@@ -48,7 +63,20 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    res.status(200).json({ result: user });
+    const { accessToken, refreshToken } = generateAccessAndRefereshTokens(
+      user._id
+    );
+
+    const options = {
+      httpOnly: true,
+      secure: true,
+    };
+
+    return res
+      .status(200)
+      .cookie("accessToken", accessToken, options)
+      .cookie("refreshToken", refreshToken, options)
+      .json({ result: user });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server Error" });
@@ -102,5 +130,3 @@ export const updateUser = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
-
-

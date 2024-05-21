@@ -1,10 +1,8 @@
-//Functions
-
-import express from "express";
+import { Router } from "express";
 import { signup, login } from "../controllers/user.controller.js";
+import { authMiddleware } from "../middlewares/user.middleware.js";
 
-const router = express.Router();
-
-router.post("/signup", signup);
-router.post("/login", login)
+const router = Router();
+router.route("/signup").post(signup)
+router.route("/login").post(login)
 export default router;
