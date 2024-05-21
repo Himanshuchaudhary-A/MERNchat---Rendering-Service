@@ -7,7 +7,6 @@ const UserSchema = mongoose.Schema({
   lastName: {
     type: String,
   },
-
   dob: {
     type: String,
   },
@@ -20,6 +19,10 @@ const UserSchema = mongoose.Schema({
   password: {
     type: String,
   },
-});
+  refreshToken: {
+    type: String,
+  },
+}, { timestamps: true });
+
 
 export const User = mongoose.model("User", UserSchema);
